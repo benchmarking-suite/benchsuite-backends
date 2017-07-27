@@ -24,7 +24,7 @@ from setuptools import find_packages
 # import the VERSION from the source code
 import sys
 sys.path.append(os.getcwd() + '/src/benchsuite')
-from core import VERSION
+from backend import VERSION
 
 
 setup(
@@ -59,6 +59,6 @@ setup(
     namespace_packages=['benchsuite'],
     package_dir={'': 'src'},
 
-    install_requires=['benchsuite.core']
+    install_requires=['benchsuite.core', 'pymongo']
 
 )
