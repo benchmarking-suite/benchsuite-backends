@@ -41,7 +41,9 @@ class MongoDBStorageConnector(StorageConnector):
             'tool': execution_result.tool,
             'workload': execution_result.workload,
             'provider': execution_result.provider,
-            'service_type': execution_result.service_type
+            'service_type': execution_result.service_type,
+            'metrics': execution_result.metrics,
+            'logs': execution_result.logs
         })
 
         logger.info('New execution results stored with id=%s', r.inserted_id)
