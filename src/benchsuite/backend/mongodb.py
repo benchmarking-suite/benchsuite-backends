@@ -42,6 +42,7 @@ class MongoDBStorageConnector(StorageConnector):
             'workload': execution_result.workload,
             'provider': execution_result.provider,
             'service_type': execution_result.service_type,
+            'exec_env': execution_result.exec_env,
             'metrics': execution_result.metrics,
             'logs': execution_result.logs
         })
