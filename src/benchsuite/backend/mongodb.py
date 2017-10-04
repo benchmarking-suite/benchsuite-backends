@@ -38,6 +38,7 @@ class MongoDBStorageConnector(StorageConnector):
         r = self.collection.insert_one({
             'start': execution_result.start,
             'duration': execution_result.duration,
+            'properties': execution_result.properties,
             'tool': execution_result.tool,
             'workload': execution_result.workload,
             'provider': execution_result.provider,
