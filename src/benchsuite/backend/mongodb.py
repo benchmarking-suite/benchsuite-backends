@@ -44,7 +44,8 @@ class MongoDBStorageConnector(StorageConnector):
             'provider': execution_result.provider,
             'exec_env': execution_result.exec_env,
             'metrics': execution_result.metrics,
-            'logs': execution_result.logs
+            'logs': execution_result.logs,
+            'user_id': execution_result.properties['user'] if 'user' in execution_result.properties else None
         })
 
         logger.info('New execution results stored with id=%s', r.inserted_id)
