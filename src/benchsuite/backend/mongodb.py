@@ -26,13 +26,17 @@ from benchsuite.core.model.storage import StorageConnector
 logger = logging.getLogger(__name__)
 
 
-
 class MongoDBStorageConnector(StorageConnector):
 
     def __init__(self):
         self.client = None
         self.db = None
         self.collection = None
+        self.err_collection = None
+
+    def save_execution_error(self, exec_error):
+        r = self.err_collection.insert_one(exec_error.__dict__)
+        logger.info('Execution error saved with with id=%s', r.inserted_id)
 
     def save_execution_result(self, execution_result: ExecutionResult):
         r = self.collection.insert_one({
@@ -58,6 +62,9 @@ class MongoDBStorageConnector(StorageConnector):
         o.client = MongoClient(config['Storage']['connection_string'])
         o.db = o.client[config['Storage']['db_name']]
         o.collection = o.db[config['Storage']['collection_name']]
+        if 'error_collection_name' not in config['Storage']:
+            config['Storage']['error_collection_name'] = 'exec_errors'
+        o.err_collection = o.db[config['Storage']['error_collection_name']]
 
         logger.info('MongoDBStorageConnector created for %s, db=%s, coll=%s', config['Storage']['connection_string'], config['Storage']['db_name'], config['Storage']['collection_name'])
 
