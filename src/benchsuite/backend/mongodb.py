@@ -18,10 +18,13 @@
 # CloudPerfect EU project (https://cloudperfect.eu/)
 import logging
 
+import datetime
+import pytz
 from pymongo import MongoClient
 
-from benchsuite.core.model.execution import ExecutionResult
 from benchsuite.core.model.storage import StorageConnector
+
+from benchsuite.core.model.execution import ExecutionResult
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +43,7 @@ class MongoDBStorageConnector(StorageConnector):
 
     def save_execution_result(self, execution_result: ExecutionResult):
         r = self.collection.insert_one({
-            'start': execution_result.start,
+            'start': datetime.datetime.fromtimestamp(execution_result.start, tz=pytz.utc),
             'duration': execution_result.duration,
             'properties': execution_result.properties,
             'tool': execution_result.tool,
