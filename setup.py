@@ -58,6 +58,6 @@ setup(
     namespace_packages=['benchsuite'],
     package_dir={'': 'src'},
 
-    install_requires=['benchsuite.core', 'pymongo']
+    install_requires=['benchsuite.core', 'pymongo', 'pytz']
 
 )
