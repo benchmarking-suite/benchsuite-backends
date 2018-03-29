@@ -36,6 +36,7 @@ class MongoDBStorageConnector(StorageConnector):
         self.db = None
         self.collection = None
         self.err_collection = None
+        self.store_logs = False
 
     def save_execution_error(self, exec_error):
         r = self.err_collection.insert_one(exec_error.__dict__)
@@ -51,7 +52,7 @@ class MongoDBStorageConnector(StorageConnector):
             'provider': execution_result.provider,
             'exec_env': execution_result.exec_env,
             'metrics': execution_result.metrics,
-            'logs': execution_result.logs,
+            'logs': execution_result.logs if self.store_logs else None,
             'user_id': execution_result.properties['user'] if 'user' in execution_result.properties else None
         })
 
@@ -59,15 +60,25 @@ class MongoDBStorageConnector(StorageConnector):
 
     @staticmethod
     def load_from_config(config):
+
+        # define some defaults
+        if 'error_collection_name' not in config['Storage']:
+            config['Storage']['error_collection_name'] = 'exec_errors'
+
+        if 'store_logs' not in config['Storage']:
+            config['Storage']['store_logs'] = "False"
+
         logger.debug('Loading %s', MongoDBStorageConnector.__module__ + "." + __class__.__name__)
 
         o = MongoDBStorageConnector()
         o.client = MongoClient(config['Storage']['connection_string'])
         o.db = o.client[config['Storage']['db_name']]
         o.collection = o.db[config['Storage']['collection_name']]
-        if 'error_collection_name' not in config['Storage']:
-            config['Storage']['error_collection_name'] = 'exec_errors'
         o.err_collection = o.db[config['Storage']['error_collection_name']]
+        if config['Storage']['store_logs'].lower() in ('true', 'yes', 'y', '1'):
+            o.store_logs = True
+        else:
+            o.store_logs = False
 
         logger.info('MongoDBStorageConnector created for %s, db=%s, coll=%s', config['Storage']['connection_string'], config['Storage']['db_name'], config['Storage']['collection_name'])
 
