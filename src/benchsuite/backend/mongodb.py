@@ -21,9 +21,7 @@ import logging
 import datetime
 import pytz
 from pymongo import MongoClient
-
 from benchsuite.core.model.storage import StorageConnector
-
 from benchsuite.core.model.execution import ExecutionResult
 
 logger = logging.getLogger(__name__)
@@ -43,33 +41,67 @@ class MongoDBStorageConnector(StorageConnector):
         logger.info('Execution error saved with with id=%s', r.inserted_id)
 
     def save_execution_result(self, execution_result: ExecutionResult):
+        #
+        # newrecord = {
+        #     'start': datetime.datetime.fromtimestamp(execution_result.start, tz=pytz.utc),
+        #     'duration': execution_result.duration,
+        #     'properties': execution_result.properties,
+        #     'tool': execution_result.tool,
+        #     'workload': execution_result.workload,
+        #     'provider': execution_result.provider,
+        #     'exec_env': execution_result.exec_env,
+        #     'metrics': execution_result.metrics,
+        # }
+        #
+        # if execution_result.category:
+        #     newrecord['category'] = execution_result.category
+        #
+        # if execution_result.subcategory:
+        #     newrecord['subcategory'] = execution_result.subcategory
+        #
+        # if 'user' in execution_result.properties:
+        #     newrecord['user'] = execution_result.properties['user']
+        #
+        # if self.store_logs:
+        #     newrecord['logs'] = execution_result.logs
 
-        newrecord = {
-            'start': datetime.datetime.fromtimestamp(execution_result.start, tz=pytz.utc),
-            'duration': execution_result.duration,
-            'properties': execution_result.properties,
-            'tool': execution_result.tool,
-            'workload': execution_result.workload,
-            'provider': execution_result.provider,
-            'exec_env': execution_result.exec_env,
-            'metrics': execution_result.metrics,
-        }
 
-        if execution_result.category:
-            newrecord['category'] = execution_result.category
-
-        if execution_result.subcategory:
-            newrecord['subcategory'] = execution_result.subcategory
-
-        if 'user' in execution_result.properties:
-            newrecord['user'] = execution_result.properties['user']
-
-        if self.store_logs:
-            newrecord['logs'] = execution_result.logs
-
-        r = self.collection.insert_one(newrecord)
+        r = self.collection.insert_one(self.__create_record(execution_result))
 
         logger.info('New execution results stored with id=%s', r.inserted_id)
+
+
+    def __create_record(self, execution_result: ExecutionResult):
+
+        record = {
+            'schema_ver': 1,
+            'starttime': datetime.datetime.fromtimestamp(
+                execution_result.start, tz=pytz.utc),
+            'metrics': execution_result.metrics,
+            'test': {
+                'tool': execution_result.tool,
+                'workload': execution_result.workload
+            },
+            'provider': execution_result.provider,
+            'execution': {
+                'environment': execution_result.exec_env
+            }
+        }
+
+        # optinal fields
+        if execution_result.properties:
+            record['properties'] = execution_result.properties
+
+        if execution_result.categories:
+            record['test']['categories'] = execution_result.categories
+
+        if self.store_logs:
+            record['execution']['logs'] = execution_result.logs
+
+        return record
+
+
+
 
     @staticmethod
     def load_from_config(config):
