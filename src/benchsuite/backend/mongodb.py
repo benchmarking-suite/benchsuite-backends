@@ -95,6 +95,9 @@ class MongoDBStorageConnector(StorageConnector):
         if execution_result.categories:
             record['test']['categories'] = execution_result.categories
 
+        if execution_result.workload_description:
+            record['test']['description'] = execution_result.workload_description
+
         if self.store_logs:
             record['execution']['logs'] = execution_result.logs
 
