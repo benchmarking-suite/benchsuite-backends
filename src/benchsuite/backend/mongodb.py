@@ -41,40 +41,17 @@ class MongoDBStorageConnector(StorageConnector):
         logger.info('Execution error saved with with id=%s', r.inserted_id)
 
     def save_execution_result(self, execution_result: ExecutionResult):
-        #
-        # newrecord = {
-        #     'start': datetime.datetime.fromtimestamp(execution_result.start, tz=pytz.utc),
-        #     'duration': execution_result.duration,
-        #     'properties': execution_result.properties,
-        #     'tool': execution_result.tool,
-        #     'workload': execution_result.workload,
-        #     'provider': execution_result.provider,
-        #     'exec_env': execution_result.exec_env,
-        #     'metrics': execution_result.metrics,
-        # }
-        #
-        # if execution_result.category:
-        #     newrecord['category'] = execution_result.category
-        #
-        # if execution_result.subcategory:
-        #     newrecord['subcategory'] = execution_result.subcategory
-        #
-        # if 'user' in execution_result.properties:
-        #     newrecord['user'] = execution_result.properties['user']
-        #
-        # if self.store_logs:
-        #     newrecord['logs'] = execution_result.logs
-
 
         r = self.collection.insert_one(self.__create_record(execution_result))
 
         logger.info('New execution results stored with id=%s', r.inserted_id)
 
 
+
     def __create_record(self, execution_result: ExecutionResult):
 
         record = {
-            'schema_ver': 1,
+            'schema_ver': 2,
             'starttime': datetime.datetime.fromtimestamp(
                 execution_result.start, tz=pytz.utc),
             'metrics': execution_result.metrics,
@@ -101,9 +78,18 @@ class MongoDBStorageConnector(StorageConnector):
         if self.store_logs:
             record['execution']['logs'] = execution_result.logs
 
+        self.__sanitize_record(record)
+
         return record
 
-
+    def __sanitize_record(self, record):
+        if 'properties' in record:
+            newd = dict(record['properties'])
+            for k,v in record['properties'].items():
+                if '.' in k:
+                    newd.pop(k)
+                    newd[k.replace('.','_dot_')] = v
+            record['properties'] = newd
 
 
     @staticmethod
