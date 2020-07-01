@@ -46,8 +46,6 @@ class MongoDBStorageConnector(StorageConnector):
 
         logger.info('New execution results stored with id=%s', r.inserted_id)
 
-
-
     def __create_record(self, execution_result: ExecutionResult):
 
         record = {
@@ -61,11 +59,12 @@ class MongoDBStorageConnector(StorageConnector):
             },
             'provider': execution_result.provider,
             'execution': {
+                'id': execution_result.exec_id,
                 'environment': execution_result.exec_env
             }
         }
 
-        # optinal fields
+        # optional fields
         if execution_result.properties:
             record['properties'] = execution_result.properties
 
